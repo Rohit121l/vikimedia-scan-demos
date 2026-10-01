@@ -76,6 +76,21 @@ a { color: inherit; }
 .item h3 { margin: 0 0 14px; color: var(--accent); font-weight: 700; font-size: 0.8rem; letter-spacing: .06em; text-transform: uppercase; }
 .item .frame { background: var(--bg); border-radius: 12px; }
 .item 
+/* pricing */
+.pricing { padding: 64px 0 72px; border-top: 1px solid var(--line); scroll-margin-top: 64px; }
+.pricing h2 { font-weight: 800; font-size: clamp(2rem, 4.4vw, 3.4rem); letter-spacing: -0.02em; line-height: 1.05; margin: 0 0 12px; }
+.plead { margin: 0 0 32px; color: var(--muted); font-size: 1.05rem; }
+.pgrid { display: grid; grid-template-columns: 1fr 1fr; }
+.pcol { padding-right: 48px; }
+.pcol + .pcol { padding-right: 0; padding-left: 48px; border-left: 1px solid var(--line); }
+.ptag { display: inline-block; margin: 0 0 18px; padding: 7px 16px; border-radius: 999px; background: var(--panel); color: var(--accent); font-weight: 700; font-size: 0.78rem; letter-spacing: .06em; text-transform: uppercase; }
+.plist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.plist li { background: var(--panel); border-radius: 12px; padding: 18px 22px; }
+.pn { display: block; font-weight: 600; font-size: 0.98rem; }
+.pp { display: block; margin-top: 4px; color: var(--accent); font-weight: 800; font-size: 1.35rem; letter-spacing: -0.01em; }
+.pnote { margin: 28px 0 0; padding: 20px 24px; background: var(--panel); border-radius: 12px; color: var(--muted); font-size: 0.95rem; }
+.pricing + .contact { margin-top: 0; }
+
 /* contact */
 .contact { padding: 88px 0 72px; border-top: 1px solid var(--line); margin-top: 56px; scroll-margin-top: 64px; }
 .contact .cta { font-weight: 800; font-size: clamp(2rem, 5vw, 3.8rem); line-height: 1.03; letter-spacing: -0.02em; margin: 0 0 14px; }
@@ -104,6 +119,12 @@ a { color: inherit; }
   .item { padding: 14px; }
   .intro { padding: 52px 0 32px; }
 }
+@media (max-width: 860px) {
+  .pricing { padding: 48px 0 56px; }
+  .pgrid { grid-template-columns: 1fr; }
+  .pcol, .pcol + .pcol { padding: 0; border-left: 0; }
+  .pcol + .pcol { margin-top: 32px; }
+}
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation-duration: .01ms !important; } }
 </style>
 </head>
@@ -128,6 +149,33 @@ a { color: inherit; }
 </div>
 
 <main class="wrap" id="main"></main>
+
+<section class="pricing" id="pricing" data-nav="pricing">
+  <div class="wrap">
+    <p class="eyebrow">06 / Approximate pricing</p>
+    <h2>A clear starting point</h2>
+    <p class="plead">Starting prices in Indian rupees (&#8377;).</p>
+    <div class="pgrid">
+      <div class="pcol">
+        <h3 class="ptag">Locations</h3>
+        <ul class="plist">
+          <li><span class="pn">Small space (shop, room, apartment)</span><span class="pp">&#8377;35,000 &ndash; &#8377;95,000</span></li>
+          <li><span class="pn">Large space (house, hotel, restaurant)</span><span class="pp">&#8377;95,000 &ndash; &#8377;2,00,000</span></li>
+          <li><span class="pn">Factory, campus or heritage site</span><span class="pp">Custom quote, from &#8377;2,00,000</span></li>
+        </ul>
+      </div>
+      <div class="pcol">
+        <h3 class="ptag">Objects</h3>
+        <ul class="plist">
+          <li><span class="pn">Small (shoes, bags, handicrafts)</span><span class="pp">&#8377;2,500 &ndash; &#8377;12,000 each</span></li>
+          <li><span class="pn">Medium (furniture, statues)</span><span class="pp">&#8377;12,000 &ndash; &#8377;35,000 each</span></li>
+          <li><span class="pn">Large batches (10+ objects)</span><span class="pp">Discounted rate</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="pnote">Approximate pricing only. The final quote depends on the size and complexity of the subject and the agreed deliverables. Travel is extra.</p>
+  </div>
+</section>
 
 <section class="contact" id="contact" data-nav="contact">
   <div class="wrap">
@@ -200,7 +248,7 @@ a { color: inherit; }
   html += '</div></section>';
   main.innerHTML = html;
 
-  var links = FEATURED.map(function (f) { return { key: f.key, label: f.nav }; }).concat([{ key: "more", label: "More" }, { key: "contact", label: "Contact" }]);
+  var links = FEATURED.map(function (f) { return { key: f.key, label: f.nav }; }).concat([{ key: "more", label: "More" }, { key: "pricing", label: "Pricing" }, { key: "contact", label: "Contact" }]);
   links.forEach(function (l) {
     var a = document.createElement("a"); a.href = "#" + l.key; a.textContent = l.label; a.dataset.key = l.key; nav.appendChild(a);
   });
