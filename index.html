@@ -217,7 +217,7 @@ a { color: inherit; }
   var DESKTOP_Q = "&budget=30";
   var MOBILE_Q = "";
   var FEATURED = [
-    { key: "location", nav: "Location", kind: "Location", title: "Taki", blurb: "Walk through a whole space from any angle. Suited to houses for sale, hotels, factories and venues.", url: V + "1d1859e7&noui" },
+    { key: "location", nav: "Location", kind: "Location", title: "Taki", blurb: "Walk through a whole space from any angle. Suited to houses for sale, hotels, factories and venues.", url: V + "1d1859e7&noui", plain: true },
     { key: "food", nav: "Food", kind: "Food", title: "Fried Branzino", blurb: "A dish you can turn and inspect from every side, for menus, delivery apps and ads.", url: V + "3d34c10f&noui" },
     { key: "fashion", nav: "Fashion", kind: "Fashion", title: "White dress", blurb: "Fabric, drape and shape that flat photos lose.", url: V + "f853aa08&noui" },
     { key: "product", nav: "Product", kind: "Product", title: "Blue canvas case", blurb: "A product on screen you can rotate and zoom, ready for a store page.", url: V + "921a99c6&noui" }
@@ -235,9 +235,9 @@ a { color: inherit; }
   function esc(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function frameHtml(it, small) {
-    return '<div class="frame' + (small ? ' small' : '') + '" data-url="' + it.url + (MOBILE ? MOBILE_Q : DESKTOP_Q) + '" data-title="' + esc(it.title) + '">' +
+    return '<div class="frame' + (small ? ' small' : '') + '" data-url="' + it.url + (it.plain ? '' : (MOBILE ? MOBILE_Q : DESKTOP_Q)) + '" data-title="' + esc(it.title) + '">' +
       '<div class="loading"><div>Loading scan<small>Big scenes can take up to a minute</small></div></div>' +
-      '<button type="button" class="shield" aria-label="Explore ' + esc(it.title) + ' in 3D"><span>' + (MOBILE ? 'Tap to load and explore in 3D' : 'Click to explore in 3D') + '</span></button>' +
+      '<button type="button" class="shield" aria-label="Explore ' + esc(it.title) + ' in 3D"><span>' + (MOBILE ? 'Tap to explore in 3D' : 'Click to explore in 3D') + '</span></button>' +
       '<div class="controls"><button type="button" class="fs">Full screen</button></div>' +
       '</div>';
   }
@@ -325,10 +325,36 @@ a { color: inherit; }
     });
   });
 
+  // The first scan starts loading straight away, so the page never opens on an empty box.
+  var first = frames[0];
+  first.dataset.keep = "1";
+  attach(first);
+  window.addEventListener("scroll", function once() { first.dataset.keep = ""; window.removeEventListener("scroll", once); }, { passive: true });
+
   if ("IntersectionObserver" in window) {
-    var loadIO = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) attach(e.target); }); }, { rootMargin: "0px", threshold: 0.2 });
-    var dropIO = new IntersectionObserver(function (es) { es.forEach(function (e) { if (!e.isIntersecting) detach(e.target); }); }, { rootMargin: MOBILE ? "10% 0px" : "60% 0px" });
-    frames.forEach(function (fr) { if (!MOBILE) loadIO.observe(fr); dropIO.observe(fr); });
+    var dropIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (!e.isIntersecting && !e.target.dataset.keep) detach(e.target); });
+    }, { rootMargin: MOBILE ? "10% 0px" : "150% 0px" });
+    frames.forEach(function (fr) { dropIO.observe(fr); });
+
+    if (MOBILE) {
+      // Phones: keep exactly one scan loaded, the one most on screen, and load it without waiting for a tap.
+      var ratios = new Map();
+      var pickIO = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { ratios.set(e.target, e.intersectionRatio); });
+        var best = null, bestR = 0.3;
+        ratios.forEach(function (r, el) { if (r > bestR) { best = el; bestR = r; } });
+        if (best) {
+          frames.forEach(function (o) { if (o !== best) { o.dataset.keep = ""; detach(o); } });
+          attach(best);
+        }
+      }, { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] });
+      frames.forEach(function (fr) { pickIO.observe(fr); });
+    } else {
+      // Desktop: start loading a scan about one screen before it comes into view.
+      var loadIO = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) attach(e.target); }); }, { rootMargin: "80% 0px" });
+      frames.forEach(function (fr) { loadIO.observe(fr); });
+    }
 
     var secIO = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
