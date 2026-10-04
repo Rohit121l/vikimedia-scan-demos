@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://superspl.at">
+<link rel="dns-prefetch" href="https://superspl.at">
 <title>Vikimedia | Location &amp; Object Scanning demos</title>
 <style>
 :root {
@@ -57,7 +59,9 @@ a { color: inherit; }
 .frame.small { height: clamp(380px, 62vh, 640px); }
 .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; z-index: 2; opacity: 0; transition: opacity .6s; }
 .frame iframe.ready { opacity: 1; }
-.loading { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; text-align: center; font-weight: 600; font-size: 1rem; color: var(--muted); }
+.loading { position: absolute; inset: 0; z-index: 1; display: none; place-items: center; text-align: center; font-weight: 600; font-size: 1rem; color: var(--muted); }
+.frame.busy .loading { display: grid; }
+.loading small { display: block; margin-top: 6px; font-size: .85rem; font-weight: 400; }
 .loading::after { content: ""; display: block; width: 32px; height: 32px; margin: 14px auto 0; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .shield { position: absolute; inset: 0; z-index: 3; border: 0; background: transparent; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding: 22px; font: inherit; }
@@ -154,21 +158,21 @@ a { color: inherit; }
   <div class="wrap">
     <p class="eyebrow">06 / Approximate pricing</p>
     <h2>A clear starting point</h2>
-    <p class="plead">Starting prices in Indian rupees (&#8377;).</p>
+    <p class="plead">All prices in USD.</p>
     <div class="pgrid">
       <div class="pcol">
         <h3 class="ptag">Locations</h3>
         <ul class="plist">
-          <li><span class="pn">Small space (shop, room, apartment)</span><span class="pp">&#8377;35,000 &ndash; &#8377;95,000</span></li>
-          <li><span class="pn">Large space (house, hotel, restaurant)</span><span class="pp">&#8377;95,000 &ndash; &#8377;2,00,000</span></li>
-          <li><span class="pn">Factory, campus or heritage site</span><span class="pp">Custom quote, from &#8377;2,00,000</span></li>
+          <li><span class="pn">Small space (shop, room, apartment)</span><span class="pp">$350 &ndash; $1,000</span></li>
+          <li><span class="pn">Large space (house, hotel, restaurant)</span><span class="pp">$1,000 &ndash; $2,000</span></li>
+          <li><span class="pn">Factory, campus or heritage site</span><span class="pp">Custom quote, from $2,000</span></li>
         </ul>
       </div>
       <div class="pcol">
         <h3 class="ptag">Objects</h3>
         <ul class="plist">
-          <li><span class="pn">Small (shoes, bags, handicrafts)</span><span class="pp">&#8377;2,500 &ndash; &#8377;12,000 each</span></li>
-          <li><span class="pn">Medium (furniture, statues)</span><span class="pp">&#8377;12,000 &ndash; &#8377;35,000 each</span></li>
+          <li><span class="pn">Small (shoes, bags, handicrafts)</span><span class="pp">$25 &ndash; $125 each</span></li>
+          <li><span class="pn">Medium (furniture, statues)</span><span class="pp">$125 &ndash; $350 each</span></li>
           <li><span class="pn">Large batches (10+ objects)</span><span class="pp">Discounted rate</span></li>
         </ul>
       </div>
@@ -207,8 +211,13 @@ a { color: inherit; }
 <script>
 (function () {
   var V = "https://superspl.at/s?id=";
+  var MOBILE = window.matchMedia("(pointer: coarse), (max-width: 860px)").matches;
+  // Quality per device. Desktop asks for high detail; phones use the viewer's own lighter default.
+  // To try another phone setting, change MOBILE_Q to e.g. "&budget=4".
+  var DESKTOP_Q = "&budget=30";
+  var MOBILE_Q = "";
   var FEATURED = [
-    { key: "location", nav: "Location", kind: "Location", title: "Taki", blurb: "Walk through a whole space from any angle. Suited to houses for sale, hotels, factories and venues.", url: V + "1d1859e7&budget=30&noui" },
+    { key: "location", nav: "Location", kind: "Location", title: "Taki", blurb: "Walk through a whole space from any angle. Suited to houses for sale, hotels, factories and venues.", url: V + "1d1859e7&noui" },
     { key: "food", nav: "Food", kind: "Food", title: "Fried Branzino", blurb: "A dish you can turn and inspect from every side, for menus, delivery apps and ads.", url: V + "3d34c10f&noui" },
     { key: "fashion", nav: "Fashion", kind: "Fashion", title: "White dress", blurb: "Fabric, drape and shape that flat photos lose.", url: V + "f853aa08&noui" },
     { key: "product", nav: "Product", kind: "Product", title: "Blue canvas case", blurb: "A product on screen you can rotate and zoom, ready for a store page.", url: V + "921a99c6&noui" }
@@ -226,9 +235,9 @@ a { color: inherit; }
   function esc(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function frameHtml(it, small) {
-    return '<div class="frame' + (small ? ' small' : '') + '" data-url="' + it.url + '" data-title="' + esc(it.title) + '">' +
-      '<div class="loading"><div>Loading scan</div></div>' +
-      '<button type="button" class="shield" aria-label="Explore ' + esc(it.title) + ' in 3D"><span>Click to explore in 3D</span></button>' +
+    return '<div class="frame' + (small ? ' small' : '') + '" data-url="' + it.url + (MOBILE ? MOBILE_Q : DESKTOP_Q) + '" data-title="' + esc(it.title) + '">' +
+      '<div class="loading"><div>Loading scan<small>Big scenes can take up to a minute</small></div></div>' +
+      '<button type="button" class="shield" aria-label="Explore ' + esc(it.title) + ' in 3D"><span>' + (MOBILE ? 'Tap to load and explore in 3D' : 'Click to explore in 3D') + '</span></button>' +
       '<div class="controls"><button type="button" class="fs">Full screen</button></div>' +
       '</div>';
   }
@@ -261,7 +270,8 @@ a { color: inherit; }
     f.title = fr.dataset.title + " (interactive 3D viewer)";
     f.allow = "fullscreen; xr-spatial-tracking; accelerometer; gyroscope";
     f.setAttribute("allowfullscreen", "");
-    f.addEventListener("load", function () { f.classList.add("ready"); var l = fr.querySelector(".loading"); if (l) l.style.display = "none"; });
+    fr.classList.add("busy");
+    f.addEventListener("load", function () { f.classList.add("ready"); fr.classList.remove("busy"); });
     f.src = fr.dataset.url;
     fr.insertBefore(f, fr.querySelector(".shield"));
   }
@@ -269,7 +279,7 @@ a { color: inherit; }
     var f = fr.querySelector("iframe");
     if (f) f.remove();
     fr.classList.remove("live");
-    var l = fr.querySelector(".loading"); if (l) l.style.display = "";
+    fr.classList.remove("busy");
   }
   function setLive(fr, on) {
     if (on) frames.forEach(function (o) { if (o !== fr) o.classList.remove("live"); });
@@ -296,7 +306,10 @@ a { color: inherit; }
   }
 
   frames.forEach(function (fr) {
-    fr.querySelector(".shield").addEventListener("click", function () { attach(fr); setLive(fr, true); });
+    fr.querySelector(".shield").addEventListener("click", function () {
+      if (MOBILE) frames.forEach(function (o) { if (o !== fr) detach(o); });
+      attach(fr); setLive(fr, true);
+    });
     fr.querySelector(".fs").addEventListener("click", function () { if (isFs(fr)) exitFs(fr); else enterFs(fr); });
   });
   ["fullscreenchange", "webkitfullscreenchange"].forEach(function (ev) {
@@ -313,9 +326,9 @@ a { color: inherit; }
   });
 
   if ("IntersectionObserver" in window) {
-    var loadIO = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) attach(e.target); }); }, { rootMargin: "60% 0px" });
-    var dropIO = new IntersectionObserver(function (es) { es.forEach(function (e) { if (!e.isIntersecting) detach(e.target); }); }, { rootMargin: "220% 0px" });
-    frames.forEach(function (fr) { loadIO.observe(fr); dropIO.observe(fr); });
+    var loadIO = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) attach(e.target); }); }, { rootMargin: "0px", threshold: 0.2 });
+    var dropIO = new IntersectionObserver(function (es) { es.forEach(function (e) { if (!e.isIntersecting) detach(e.target); }); }, { rootMargin: MOBILE ? "10% 0px" : "60% 0px" });
+    frames.forEach(function (fr) { if (!MOBILE) loadIO.observe(fr); dropIO.observe(fr); });
 
     var secIO = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
@@ -326,7 +339,7 @@ a { color: inherit; }
       });
     }, { rootMargin: "-45% 0px -50% 0px" });
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (s) { secIO.observe(s); });
-  } else {
+  } else if (!MOBILE) {
     frames.forEach(attach);
   }
 })();
